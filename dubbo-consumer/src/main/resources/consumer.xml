@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd        ">
+	<!-- 扫描注解包路径，多个包用逗号分隔，不填pacakge表示扫描当前ApplicationContext中所有的类 -->
+	<dubbo:annotation package="com.dubbo.dubboconsumer.service"></dubbo:annotation>
+
+	<!-- 应用配置，用于配置当前应用信息，不管该应用是提供者还是消费者。-->
+	<dubbo:application name="service-consumer" />
+
+	<!--服务注册地址，根据自己配置修改-->
+	<dubbo:registry  protocol="zookeeper" address="10.1.121.160:2181" />
+
+	<!-- 生成远程服务代理，可以像使用本地bean一样使用citySercvice-->
+	<dubbo:reference interface="service.CityService" id="citySercvice" version="1.0.0"></dubbo:reference>
+
+
+</beans>

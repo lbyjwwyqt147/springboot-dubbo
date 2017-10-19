@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd        ">
+    <!-- 扫描注解包路径，多个包用逗号分隔，不填pacakge表示扫描当前ApplicationContext中所有的类 -->
+<!--
+    <dubbo:annotation package="com.dubbo.dubboprovider.service"></dubbo:annotation>
+-->
+
+    <!-- 应用配置，用于配置当前应用信息，不管该应用是提供者还是消费者。-->
+    <dubbo:application name="service-provider" />
+    <!--服务注册地址，用于配置连接注册中心相关信息,根据自己配置修改-->
+    <dubbo:registry  protocol="zookeeper" address="10.1.121.160:2181" />
+    <!-- 协议配置，用于配置提供服务的协议信息，协议由提供方指定，消费方被动接受。 端口-1 表示随机分配 不占用其他端口 -->
+    <dubbo:protocol name="dubbo" port="-1" />
+    <!-- 服务配置，用于暴露一个服务，定义服务的元信息，一个服务可以用多个协议暴露，一个服务也可以注册到多个注册中心。-->
+    <!-- 版本号要和消费方一致 -->
+    <!-- cluster:配置容错模式 -->
+    <!-- retries:配置重试次数 -->
+    <!-- timeout: 配置超时时间 -->
+    <!-- loadbalance:负载均衡模式 -->
+
+    <!-- 配置使用Failover Cluster模式，如果调用失败一次，可以再次重试2次调用，服务级别调用超时时间为100ms，调用方法getCityName的超时时间为80ms，允许重试2次，最坏情况调用花费时间160ms。 -->
+    <!-- dubbo:service元素配置了loadbalance=”random”，则该元素的子元素dubbo:method如果没有指定负载均衡策略，则默认为loadbalance=”random”，否则如果dubbo:method指定了loadbalance=”leastactive”，则使用子元素配置的负载均衡策略覆盖了父元素指定的策略（这里调用getCityName方法使用leastactive负载均衡策略）。 -->
+
+    <dubbo:service interface="service.CityService" ref="citySercvice" protocol="dubbo"  version="1.0.0"
+                   cluster="failover" retries="2" timeout="100" loadbalance="random" >
+       <!-- <dubbo:method name="getCityName" timeout="80" retries="2" loadbalance="leastactive" />-->
+
+    </dubbo:service>
+
+    <bean id="citySercvice" class="com.dubbo.dubboprovider.service.impl.CityServiceImpl" />
+
+
+
+
+    <!--
+
+    容错模式：
+
+    Failover Cluster模式
+配置值为failover。这种模式是Dubbo集群容错默认的模式选择，调用失败时，会自动切换，重新尝试调用其他节点上可用的服务。
+
+    Failfast Cluster模式
+配置值为failfast。这种模式称为快速失败模式，调用只执行一次，失败则立即报错。这种模式适用于非幂等性操作，每次调用的副作用是不同的，如写操作，比如交易系统我们要下订单，如果一次失败就应该让它失败，通常由服务消费方控制是否重新发起下订单操作请求（另一个新的订单）。
+
+Failsafe Cluster模式
+配置值为failsafe。失败安全模式，如果调用失败， 则直接忽略失败的调用，而是要记录下失败的调用到日志文件，以便后续审计。
+
+Failback Cluster模式
+配置值为failback。失败自动恢复，后台记录失败请求，定时重发。通常用于消息通知操作。
+
+Forking Cluster模式
+配置值为forking。并行调用多个服务器，只要一个成功即返回。通常用于实时性要求较高的读操作，但需要浪费更多服务资源。
+
+Broadcast Cluster模式
+配置值为broadcast。广播调用所有提供者，逐个调用，任意一台报错则报错（2.1.0开始支持）。通常用于通知所有提供者更新缓存或日志等本地资源信息
+
+
+
+
+
+  负载均衡：
+
+  Random LoadBalance：随机策略，配置值为random。可以设置权重，有利于充分利用服务器的资源，高配的可以设置权重大一些，低配的可以稍微小一些
+  RoundRobin LoadBalance：轮询策略，配置值为roundrobin。
+  LeastActive LoadBalance：配置值为leastactive。根据请求调用的次数计数，处理请求更慢的节点会受到更少的请求
+  ConsistentHash LoadBalance：一致性Hash策略，具体配置方法可以参考Dubbo文档。相同调用参数的请求会发送到同一个服务提供方节点上，如果某个节点发生故障无法提供服务，则会基于一致性Hash算法映射到虚拟节点上（其他服务提供方）
+
+
+
+    -->
+
+</beans>
